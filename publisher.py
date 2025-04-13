@@ -4,6 +4,7 @@ import argparse
 import logging
 import struct
 import random
+import os
 
 IMU_STRUCT = struct.Struct("<3fI3iI3fI")
 
@@ -29,23 +30,30 @@ def main():
 
     logging.basicConfig(level=getattr(logging, args.log_level.upper()))
 
-    try:
-        sock= socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-        sock.connect(args.socket_path)
-    except Exception as e:
-        logging.error("Failed to connect to socket: ", e)
-        return
+    while True:
+        if not os.path.exists(args.socket_path):
+            logging.warning("Socket not available. Retrying...")
+            time.sleep(1)
+            continue
+        interval = 1.0 / args.frequency_hz
+        logging.info("Publisher started")
 
-    interval = 1.0 / args.frequency_hz
-    logging.info("Publisher started")
+        try:
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            sock.connect(args.socket_path)
+            logging.info("Publisher connected")
 
-    try:
-        while True:
-            data = generate_random_imu_data()
-            sock.send(data)
-            time.sleep(interval)
-    except KeyboardInterrupt:
-        logging.info("Publisher exiting")
+            while True:
+                data = generate_random_imu_data()
+                sock.send(data)
+                time.sleep(interval)
+        except (FileNotFoundError, ConnectionRefusedError, OSError) as e:
+            logging.warning(f"Connection lost: {e}. Reconnecting...")
+            sock.close()
+            time.sleep(1)
+        except KeyboardInterrupt:
+            logging.info("Publisher interrupted, exiting.")
+            break
 
 if __name__ == '__main__':
     main()
