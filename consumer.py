@@ -38,6 +38,25 @@ def compute_orientation_from_vector(vec):
     r = R.from_matrix(rot_matrix)
     return r.as_euler('xyz', degrees=True), r.as_quat()
 
+def compute_fused_orientation(acc, mag):
+    acc = np.array(acc)
+    mag = np.array(mag)
+
+    acc_norm = acc / np.linalg.norm(acc)
+    mag_norm = mag / np.linalg.norm(mag)
+
+    z = acc_norm
+    x = np.cross(mag_norm, z)
+    if np.linalg.norm(x) == 0:
+        x = np.array([1, 0, 0])
+    x = x / np.linalg.norm(x)
+
+    y = np.cross(z, x)
+
+    rot_matrix = np.vstack([x, y, z]).T
+    r = R.from_matrix(rot_matrix)
+    return r.as_euler('xyz', degrees=True), r.as_quat()
+
 def log_sensor(name, vector):
     euler, quat = compute_orientation_from_vector(vector)
     logging.info(f"\n**{name.upper()}**")
@@ -72,9 +91,18 @@ def main():
                     continue
 
                 imu = parse_imu_data(data)
+
+                # Log each sensor individually
                 log_sensor("Accelerometer", imu["acc"])
                 log_sensor("Gyroscope", imu["gyro"])
                 log_sensor("Magnetometer", imu["mag"])
+
+                # Log fused orientation (acc + mag)
+                euler, quat = compute_fused_orientation(imu["acc"], imu["mag"])
+                logging.info(f"\n**SENSOR FUSION**")
+                logging.info(f"Fused Euler: Roll={euler[0]:.2f}, Pitch={euler[1]:.2f}, Yaw={euler[2]:.2f}")
+                logging.info(f"Fused Quaternion: x={quat[0]:.4f}, y={quat[1]:.4f}, z={quat[2]:.4f}, w={quat[3]:.4f}")
+
                 logging.info("-" * 40)
 
             except socket.timeout:
