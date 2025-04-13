@@ -1,1 +1,141 @@
 # imu-task
+
+This project simulates a custom control protocol using **IPC socket communication** between a **publisher** (IMU data generator) and a **consumer** (IMU data processor). It replicates the behavior of a physical IMU sensor connected to a robot or embedded system.
+
+---
+
+## 📦 Tech Stack
+
+- Language: **Python 3**
+- IPC: **UNIX domain sockets (DGRAM)**
+- Libraries: `argparse`, `socket`, `struct`, `logging`, `numpy`, `scipy`
+- Platform: **Debian-based Linux (tested on Ubuntu)**
+
+---
+
+## 📂 Project Structure
+
+```
+├── publisher.py         # Sends IMU data packets to consumer
+├── consumer.py          # Receives, decodes, and processes IMU data
+├── run_publisher.sh     # Launches publisher
+├── run_consumer.sh      # Launches consumer
+├── requirements.txt     # Python dependencies
+└── README.md
+```
+
+---
+
+## ⚙️ Setup Instructions
+
+1. Clone the repository or unzip the folder.
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 🚀 Running the Programs
+
+> ✅ The publisher behaves like a real sensor: it waits patiently until a consumer starts listening.
+
+### 🔹 Publisher (Sensor) Behavior
+- **Start anytime** — it will **wait** until the consumer creates the socket.
+- If the consumer is **stopped mid-execution**, the publisher will continue running and **retry** sending data once the socket reappears.
+- This mimics the behavior of an ** IMU sensor** attached to hardware.
+- Starting the publisher = **sensor connected**  
+  Stopping the publisher = **sensor disconnected**
+
+### 🔹 Requirements
+- The `--socket-path` must be **identical** in both publisher and consumer.
+
+---
+
+### 🖥️ Terminal Commands
+
+
+### Terminal 1 (Run Publisher)
+```bash
+. run_publisher.sh
+```
+
+### Terminal 2 (Run Consumer)
+```bash
+. run_consumer.sh
+```
+---
+
+## 🔧 CLI Usage
+
+### ✅ Publisher
+
+```bash
+python3 publisher.py \
+  --socket-path /tmp/imu_socket \
+  --frequency-hz 20 \
+  --log-level INFO
+```
+
+- `--socket-path`: Path to IPC socket file
+- `--frequency-hz`: Message frequency (Hz)
+- `--log-level`: Logging verbosity
+
+### ✅ Consumer
+
+```bash
+python3 consumer.py \
+  --socket-path /tmp/imu_socket \
+  --timeout-ms 100 \
+  --log-level INFO
+```
+
+- `--socket-path`: Path to IPC socket file
+- `--timeout-ms`: Socket timeout (ms)
+- `--log-level`: Logging verbosity
+
+---
+
+## 📈 Example Output (Trimmed)
+
+```
+**ACCELEROMETER**
+Raw: x=0.3142, y=0.8765, z=0.2314
+Euler: Roll=31.45, Pitch=-22.89, Yaw=7.23
+Quaternion: x=0.23, y=0.12, z=0.09, w=0.96
+
+**SENSOR FUSION**
+Fused Euler: Roll=28.65, Pitch=-18.33, Yaw=145.12
+Fused Quaternion: x=0.19, y=0.14, z=0.52, w=0.82
+----------------------------------------
+```
+
+---
+
+## 📌 Assumptions & Notes
+
+- The publisher continues running even if no consumer is connected (like a real sensor).
+- The consumer parses 48-byte binary packets using the `Payload_IMU_t` structure.
+- Sensor fusion is computed from **accelerometer + magnetometer** using a rotation matrix approach.
+- Gimbal lock is avoided using **quaternion-based orientation** internally.
+- No real-time scheduling (RT) was implemented. This is optional per the task PDF.
+
+---
+
+## 🛑 Stopping the Programs
+
+Use `Ctrl+C` in both terminals to terminate the publisher and consumer gracefully.
+
+---
+
+## ✅ Status
+
+✔️ All required features from the task PDF are implemented  
+✔️ Optional features like reconnection and sensor fusion are also included
+
+---
+
+## 📬 Contact
+
+If you have questions or need a walk-through of the implementation, feel free to reach out.
