@@ -21,7 +21,7 @@ def parse_imu_data(data):
     }
 
 def compute_orientation_from_vector(vec):
-    vec = np.array(vec)
+    vec = np.array(vec, dtype=float)
     if np.linalg.norm(vec) == 0:
         vec = np.array([1.0, 0.0, 0.0])
     vec = vec / np.linalg.norm(vec)
@@ -29,7 +29,7 @@ def compute_orientation_from_vector(vec):
 
     x = np.cross(vec, ref)
     if np.linalg.norm(x) == 0:
-        x = np.array([1, 0, 0])
+        x = np.array([1.0, 0.0, 0.0])
     x /= np.linalg.norm(x)
 
     y = np.cross(ref, x)
@@ -48,7 +48,7 @@ def compute_fused_orientation(acc, mag):
     z = acc_norm
     x = np.cross(mag_norm, z)
     if np.linalg.norm(x) == 0:
-        x = np.array([1, 0, 0])
+        x = np.array([1.0, 0.0, 0.0])
     x = x / np.linalg.norm(x)
 
     y = np.cross(z, x)
