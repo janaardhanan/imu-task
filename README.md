@@ -55,14 +55,40 @@ pip install -r requirements.txt
 
 ### 🖥️ Terminal Commands
 
-### Terminal 1 (Run Publisher)
+### Terminal 1 – Run Publisher
+
+Run with default settings:
 ```bash
 . run_publisher.sh
 ```
 
-### Terminal 2 (Run Consumer)
+Custom socket, frequency, type, and log level:
+```bash
+. run_publisher.sh /tmp/imu_socket 20 yaw debug
+```
+
+Format:
+```bash
+. run_publisher.sh <socket_path> <frequency_hz> <publishing_type> <log_level>
+```
+
+---
+
+### Terminal 2 – Run Consumer
+
+Run with default settings:
 ```bash
 . run_consumer.sh
+```
+
+Custom socket, timeout, and log level:
+```bash
+. run_consumer.sh /tmp/imu_socket 200 debug
+```
+
+Format:
+```bash
+. run_consumer.sh <socket_path> <timeout_ms> <log_level>
 ```
 ---
 
