@@ -161,20 +161,11 @@ Fused Quaternion: x=0.19, y=0.14, z=0.52, w=0.82
 - The consumer parses 48-byte binary packets using the `Payload_IMU_t` structure.
 - Sensor fusion is computed from **accelerometer + magnetometer** using a rotation matrix approach.
 - Gimbal lock is avoided using **quaternion-based orientation** internally.
-- No real-time scheduling (RT) was implemented. This is optional per the task PDF.
-
 ---
 
 ## 🛑 Stopping the Programs
 
 Use `Ctrl+C` in both terminals to terminate the publisher and consumer gracefully.
-
----
-
-## ✅ Status
-
-✔️ All required features from the task PDF are implemented  
-✔️ Optional features like reconnection and sensor fusion are also included
 
 ---
 
